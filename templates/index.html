@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive IR</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+<script type="text/babel">
+    // Components
+    function CardIR(props){
+        return (
+            <div className="card bg-white">
+                <p className="card-header h5 bg-grey">{props.title}</p>
+                <div className="p-3">
+                    {props.content}
+                </div>
+            </div>
+        );
+    }
+
+    function RadioIR(props){
+        var items = [];
+        for(var i = 0; i < props.options.length; i++){
+            if(i === 0){
+                items.push(
+                    <div className="custom-control custom-radio" key={props.title + "_" + props.options[i]}>
+                      <input
+                        type="radio"
+                        id={props.title + "_" + props.options[i]}
+                        name={props.title}
+                        className="custom-control-input"
+                        value={props.options[i]}
+                        defaultChecked
+                      />
+                      <label className="custom-control-label" htmlFor={props.title + "_" + props.options[i]}>{props.labels[i]}</label>
+                    </div>
+                );
+            }
+            else {
+                items.push(
+                    <div className="custom-control custom-radio" key={props.title + "_" + props.options[i]}>
+                      <input
+                        type="radio"
+                        id={props.title + "_" + props.options[i]}
+                        name={props.title}
+                        className="custom-control-input"
+                        value={props.options[i]}
+                      />
+                      <label className="custom-control-label" htmlFor={props.title + "_" + props.options[i]}>{props.labels[i]}</label>
+                    </div>
+                );
+            }
+        }
+        return (
+            <div className="form-group">
+                <h6>{props.title}</h6>
+                {items}
+            </div>
+        );
+    }
+
+    class IRSettings extends React.Component{
+        render(){
+            return(
+                <div>
+                    <form action="{{ url_for('result') }}" id="IRSettingsForm" method="post">
+                        <div className="container">
+                        <div className="row">
+                            <div className="col-12 col-sm-12 d-flex justify-content-center">
+                                <h1>Interactive Information Retrieval System (IIR)</h1>
+                            </div>
+                        </div>
+
+                        {/* Indexing */}
+                        <div className="row p-2">
+                            <div className="col-12 col-sm-12">
+                                <CardIR
+                                    title="Indexing"
+                                    content={
+                                        <div>
+                                            <div className="row">
+                                                <div className="col-12 col-md-4">
+                                                    <RadioIR
+                                                        title="TF"
+                                                        options={
+                                                            [
+                                                                'none',
+                                                                'binary',
+                                                                'raw',
+                                                                'log',
+                                                                'aug'
+                                                            ]
+                                                        }
+                                                        labels={
+                                                            [
+                                                                'None',
+                                                                'Binary TF',
+                                                                'Raw TF',
+                                                                'Log TF',
+                                                                'Augmented TF',
+                                                            ]
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-12 col-md-4">
+                                                    <RadioIR
+                                                        title="IDF"
+                                                        options={
+                                                            [
+                                                                'false',
+                                                                'true'
+                                                            ]
+                                                        }
+                                                        labels={
+                                                            [
+                                                                'None',
+                                                                'Use IDF'
+                                                            ]
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-6 col-md-4">
+                                                    <RadioIR
+                                                        title="Normalization"
+                                                        options={
+                                                            [
+                                                                'false',
+                                                                'true'
+                                                            ]
+                                                        }
+                                                        labels={
+                                                            [
+                                                                'None',
+                                                                'Cosine Normalization',
+                                                            ]
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-6 col-md-4">
+                                                    <RadioIR
+                                                        title="Stopwords"
+                                                        options={
+                                                            [
+                                                                'false',
+                                                                'true'
+                                                            ]
+                                                        }
+                                                        labels={
+                                                            [
+                                                                'Not Eliminated',
+                                                                'Eliminated',
+                                                            ]
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-6 col-md-4">
+                                                    <RadioIR
+                                                        title="Stemming"
+                                                        options={
+                                                            [
+                                                                'false',
+                                                                'true'
+                                                            ]
+                                                        }
+                                                        labels={
+                                                            [
+                                                                'None',
+                                                                'Use Stemming',
+                                                            ]
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        {/* Retrieval */}
+                        <div className="row p-2">
+                            <div className="col-12 col-sm-12">
+                                <CardIR
+                                    title="Retrieval"
+                                    content={
+                                        <div>
+                                            <div className="row">
+                                                <div className="col-12 col-sm-12">
+                                                    <div className="custom-control custom-radio custom-control-inline">
+                                                      <input type="radio" id="experiment" name="Retrieval" value="experiment" className="custom-control-input" defaultChecked/>
+                                                      <label className="custom-control-label" htmlFor="experiment">Experiment</label>
+                                                    </div>
+                                                    <div className="custom-control custom-radio custom-control-inline">
+                                                      <input type="radio" id="interactive" name="Retrieval" value="interactive" className="custom-control-input"/>
+                                                      <label className="custom-control-label" htmlFor="interactive">interactive</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            {/* Documents */}
+                                            <div className="row">
+                                                <div className="col-12 col-sm-12">
+                                                    <div className="input-group input-group-sm" id="input_document">
+                                                      <div className="input-group-prepend">
+                                                        <span className="input-group-text">Document Collections</span>
+                                                      </div>
+                                                      <textarea className="form-control" name="input_doc" id="textarea_doc" form="IRSettingsForm" aria-label="With textarea"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            {/* Queries */}
+                                            <div className="row">
+                                                <div className="col-12 col-sm-12">
+                                                    <div className="input-group input-group-sm" id="input_query">
+                                                      <div className="input-group-prepend">
+                                                        <span className="input-group-text" id="input_query_label">Query Collections</span>
+                                                      </div>
+                                                      <textarea className="form-control" name="input_query" id="textarea_query" form="IRSettingsForm" aria-label="With textarea"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            {/* Relevance Judgement */}
+                                            <div className="row">
+                                                <div className="col-12 col-sm-12">
+                                                    <div className="input-group input-group-sm" id="input_relevance">
+                                                      <div className="input-group-prepend">
+                                                        <span className="input-group-text">Relevance Collections</span>
+                                                      </div>
+                                                      <textarea className="form-control" name="input_relevance" id="textarea_relevance" aria-label="With textarea"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        <div className="row p-2">
+                            <div className="col-12 col-sm-12 d-flex justify-content-center">
+                                <button className="btn btn-primary" onClick={this.sendRequest}>Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+            );
+        }
+    }
+
+    // JQuery
+    $(function(){
+        $("input[name='retrieval']").on('change', function(e){
+            var type_retrieval = $(e.currentTarget).val();
+            if(type_retrieval === 'experiment'){
+                $('#input_query_label').text("Query Collections");
+                $('#input_relevance').show()
+            }
+            else if(type_retrieval === 'interactive') {
+                $('#input_query_label').text("Write a query");
+                $('#input_relevance').hide()
+            }
+        });
+    });
+
+    ReactDOM.render(
+        <IRSettings/>,
+        document.getElementById('root')
+    );
+</script>
+</html>
