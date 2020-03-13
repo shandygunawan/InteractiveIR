@@ -68,6 +68,36 @@
     }
 
     class IRSettings extends React.Component{
+
+        enableTab(id) {
+            var el = document.getElementById(id);
+            el.onkeydown = function(e) {
+                if (e.keyCode === 9) { // tab was pressed
+
+                    // get caret position/selection
+                    var val = this.value,
+                        start = this.selectionStart,
+                        end = this.selectionEnd;
+
+                    // set textarea value to: text before caret + tab + text after caret
+                    this.value = val.substring(0, start) + '\t' + val.substring(end);
+
+                    // put caret at right position again
+                    this.selectionStart = this.selectionEnd = start + 1;
+
+                    // prevent the focus lose
+                    return false;
+
+                }
+            };
+        }
+
+        componentDidMount(){
+            this.enableTab("textarea_doc");
+            this.enableTab("textarea_query");
+            this.enableTab("textarea_relevance");
+        }
+
         render(){
             return(
                 <div>
@@ -173,7 +203,7 @@
                                                         labels={
                                                             [
                                                                 'None',
-                                                                'Use Stemming',
+                                                                'Use Stemming (Porter)',
                                                             ]
                                                         }
                                                     />
@@ -212,7 +242,14 @@
                                                       <div className="input-group-prepend">
                                                         <span className="input-group-text">Document Collections</span>
                                                       </div>
-                                                      <textarea className="form-control" name="input_doc" id="textarea_doc" form="IRSettingsForm" aria-label="With textarea"></textarea>
+                                                      <textarea
+                                                          rows="10"
+                                                          className="form-control"
+                                                          name="input_doc"
+                                                          id="textarea_doc"
+                                                          form="IRSettingsForm"
+                                                          aria-label="With textarea"
+                                                      />
                                                     </div>
                                                 </div>
                                             </div>
@@ -224,7 +261,14 @@
                                                       <div className="input-group-prepend">
                                                         <span className="input-group-text" id="input_query_label">Query Collections</span>
                                                       </div>
-                                                      <textarea className="form-control" name="input_query" id="textarea_query" form="IRSettingsForm" aria-label="With textarea"></textarea>
+                                                      <textarea
+                                                          rows="5"
+                                                          className="form-control"
+                                                          name="input_query"
+                                                          id="textarea_query"
+                                                          form="IRSettingsForm"
+                                                          aria-label="With textarea"
+                                                      />
                                                     </div>
                                                 </div>
                                             </div>
@@ -236,7 +280,13 @@
                                                       <div className="input-group-prepend">
                                                         <span className="input-group-text">Relevance Collections</span>
                                                       </div>
-                                                      <textarea className="form-control" name="input_relevance" id="textarea_relevance" aria-label="With textarea"></textarea>
+                                                      <textarea
+                                                          rows="10"
+                                                          className="form-control"
+                                                          name="input_relevance"
+                                                          id="textarea_relevance"
+                                                          aria-label="With textarea"
+                                                      />
                                                     </div>
                                                 </div>
                                             </div>
