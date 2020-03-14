@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from classes import Docs
+from classes import Inputs, InvertedFile
 import json
 import helpers
 
@@ -13,12 +13,11 @@ def index():
 
 @app.route('/result', methods=["POST"])
 def result():
-    settings = helpers.get_settings(request.form)
-    inputs = helpers.get_inputs(settings['type'], request.form)
-    docs = Docs(inputs['documents'], settings)
+    helpers.set_settings(request.form)
+    inputs = Inputs(request.form)
 
-    inverted_file = helpers.create_inverted_file(docs, settings)
-    return json.dumps(inverted_file)
+    inverted_file = InvertedFile(inputs.docs)
+    return json.dumps(inverted_file.inverted_file)
 
 
 if __name__ == '__main__':

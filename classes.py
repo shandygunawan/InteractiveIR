@@ -3,64 +3,88 @@ from math import log2
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
+import settings
+import json
 
 
-class Docs:
+class Inputs:
+    # Constants
+    TYPE_DOCUMENT = "document"
+    TYPE_QUERY = "query"
+    TYPE_RELEVANCE = "relevance"
+
     docs = {}
-    settings = {}
+    queries = {}
+    relevances = {}
 
-    def __init__(self, documents, param_settings):
-        self.settings = param_settings
-        for doc_id in documents.keys():
-            self.add_update(doc_id, documents[doc_id])
+    def __init__(self, req_form):
+        json_docs = json.loads(req_form["input_doc"])
+        self.set_docs(json_docs)
 
-    def get_settings(self):
-        return self.settings
+    #
+    # DOCS
+    #
+    def set_docs(self, json_docs):
+        for doc_id in json_docs.keys():
+            self.add_doc(doc_id, json_docs[doc_id])
 
-    def get_all(self):
+    def get_docs(self):
         return self.docs
 
-    def get_id(self, doc_id):
-        if doc_id in self.docs:
-            return self.docs[doc_id]
-        else:
-            return -1
+    def add_doc(self, doc_id, doc):
+        self.docs[doc_id] = self.preprocessing(input_type=self.TYPE_DOCUMENT,
+                                               input_content=doc)
 
-    def add_update(self, doc_id, doc):
-        self.docs[doc_id] = self.preprocessing(doc)
+    #
+    # QUERIES
+    #
+    def set_queries(self, json_queries):
+        for query_id in json_queries.keys():
+            self.add_query(query_id, json_queries[query_id])
 
-    def preprocessing(self, doc):
+    def add_query(self, query_id, query):
+        self.queries[query_id] = self.preprocessing(input_type=self.TYPE_QUERY,
+                                                    input_content=query)
+
+    #
+    # OTHER
+    #
+    def preprocessing(self, input_type, input_content):
         stop_words = set(stopwords.words('english'))
 
         # Case Folding
-        words = doc['document'].lower()
+        if input_type == self.TYPE_DOCUMENT:
+            words = input_content['document'].lower()
+        else:
+            words = input_content['document'].lower()
 
         # Tokenize
         words = word_tokenize(words)
 
         # Stopwords Removal
-        if self.settings['stopwords'] == 'true':
+        if settings.stopwords == 'true':
             words = [w for w in words if not w in stop_words]
 
         # Stemming (Porter)
-        if self.settings['stemming'] == 'true':
+        if settings.stemming == 'true':
             ps = PorterStemmer()
             words = [ps.stem(w) for w in words]
 
-        doc['document'] = words
+        if input_type == self.TYPE_DOCUMENT:
+            input_content['document'] = words
+        else:
+            input_content['document'] = words
 
-        return doc
+        return input_content
 
 
 class TFIDF:
 
     idf_dict = {}
     docs = {}
-    tf_type = ""
 
-    def __init__(self, param_docs, tf):
+    def __init__(self, param_docs):
         self.docs = param_docs
-        self.tf_type = tf
 
     #
     # IDF
@@ -91,23 +115,21 @@ class TFIDF:
     #
     # TF
     #
-    def get_tf_type(self):
-        return self.tf_type
 
     def calculate_tf(self, term, doc_id):
-        if self.tf_type == "raw":
+        if settings.tf == "raw":
             return self.docs[doc_id]['document'].count(term)
-        elif self.tf_type == "binary":
+        elif settings.tf == "binary":
             if term in self.docs[doc_id]['document']:
                 return 1
             else:
                 return 0
-        elif self.tf_type == "log":
+        elif settings.tf == "log":
             if term not in self.docs[doc_id]['document']:
                 return 0
             else:
                 return 1 + log2(self.docs[doc_id]['document'].count(term))
-        elif self.tf_type == "aug":
+        elif settings.tf == "aug":
             count_term = self.docs[doc_id]['document'].count(term)
 
             # Get the number of occurrences for the item with the highest occurrences
@@ -121,3 +143,35 @@ class TFIDF:
             return -1
 
 
+class InvertedFile:
+    inverted_file = {}
+
+    def __init__(self, docs):
+        self.create(docs)
+
+    def create(self, docs):
+        self.inverted_file = {}
+
+        tfidf = TFIDF(param_docs=docs)
+
+        for doc_id in docs.keys():
+            # Weighting
+            for word in docs[doc_id]['document']:
+                if word not in self.inverted_file:
+                    self.inverted_file[word] = {}
+
+                if doc_id not in self.inverted_file[word]:
+                    if settings.tf != 'none':
+                        tf = tfidf.calculate_tf(word, doc_id)
+                    else:
+                        tf = 1
+
+                    if settings.idf == 'true':
+                        if tfidf.is_idf_exist(word):
+                            idf = tfidf.get_idf(word)
+                        else:
+                            idf = tfidf.calculate_idf(word)
+                    else:
+                        idf = 1
+
+                    self.inverted_file[word][doc_id] = tf * idf

@@ -1,0 +1,6 @@
+tf = ""
+idf = ""
+stemming = ""
+normalization = ""
+stopwords = ""
+ir_type = ""
