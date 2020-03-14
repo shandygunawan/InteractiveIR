@@ -1,4 +1,5 @@
 from collections import defaultdict
+from copy import deepcopy
 from math import log2
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -13,23 +14,28 @@ class Inputs:
     TYPE_QUERY = "query"
     TYPE_RELEVANCE = "relevance"
 
+    docs_raw = {}
+    queries_raw = []
+    relevances_raw = {}
+
     docs = {}
-    queries = {}
+    queries = []
     relevances = {}
 
     def __init__(self, req_form):
-        json_docs = json.loads(req_form["input_doc"])
-        self.set_docs(json_docs)
+        self.docs_raw = json.loads(req_form["input_doc"])
+        self.queries_raw = json.loads(req_form["input_query"])
+
+        self.set_docs(deepcopy(self.docs_raw))
+        self.set_queries(deepcopy(self.queries_raw))
 
     #
     # DOCS
     #
     def set_docs(self, json_docs):
+        self.docs = {}
         for doc_id in json_docs.keys():
             self.add_doc(doc_id, json_docs[doc_id])
-
-    def get_docs(self):
-        return self.docs
 
     def add_doc(self, doc_id, doc):
         self.docs[doc_id] = self.preprocessing(input_type=self.TYPE_DOCUMENT,
@@ -39,12 +45,13 @@ class Inputs:
     # QUERIES
     #
     def set_queries(self, json_queries):
-        for query_id in json_queries.keys():
-            self.add_query(query_id, json_queries[query_id])
+        self.queries = []
+        for query in json_queries:
+            self.add_query(query)
 
-    def add_query(self, query_id, query):
-        self.queries[query_id] = self.preprocessing(input_type=self.TYPE_QUERY,
-                                                    input_content=query)
+    def add_query(self, query):
+        self.queries.append(self.preprocessing(input_type=self.TYPE_QUERY,
+                                               input_content=query))
 
     #
     # OTHER
@@ -55,8 +62,8 @@ class Inputs:
         # Case Folding
         if input_type == self.TYPE_DOCUMENT:
             words = input_content['document'].lower()
-        else:
-            words = input_content['document'].lower()
+        else:  # Query
+            words = input_content.lower()
 
         # Tokenize
         words = word_tokenize(words)
@@ -73,7 +80,7 @@ class Inputs:
         if input_type == self.TYPE_DOCUMENT:
             input_content['document'] = words
         else:
-            input_content['document'] = words
+            input_content = words
 
         return input_content
 

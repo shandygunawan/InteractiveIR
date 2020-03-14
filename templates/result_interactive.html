@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive Result</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+<script type="text/babel">
+    // Receive variables from backend
+    const ir_result = JSON.parse('{{ ir_result | tojson | safe }}');
+
+    // Components
+    function TableRelevanceOrder(props){
+        var documents = [];
+
+        for(var i = 0; i < props.docs.length; i++){
+            documents.push(
+                <tr key={props.docs[i]['id']}>
+                    <th scope="row">{i+1}</th>
+                    <td>{props.docs[i]['id']}</td>
+                    <td>{props.docs[i]['document']}</td>
+                </tr>
+            );
+        }
+
+        return (
+            <table className="table">
+              <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Document's ID</th>
+                    <th scope="col">Document's Content</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documents}
+              </tbody>
+            </table>
+        );
+    }
+
+    class ResultInteractive extends React.Component {
+        render(){
+            return(
+              <div className="container">
+                  <h2>Relevance documents:</h2>
+                  <p>Sorted from the very relevance</p>
+                  <TableRelevanceOrder
+                    docs = {ir_result["result"]}
+                  />
+              </div>
+            );
+        }
+    }
+
+    ReactDOM.render(
+        <ResultInteractive/>,
+        document.getElementById('root')
+    );
+</script>
+</html>

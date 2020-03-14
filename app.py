@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from classes import Inputs, InvertedFile
 import json
 import helpers
+import settings
 
 app = Flask(__name__)
 
@@ -15,9 +16,18 @@ def index():
 def result():
     helpers.set_settings(request.form)
     inputs = Inputs(request.form)
-
     inverted_file = InvertedFile(inputs.docs)
-    return json.dumps(inverted_file.inverted_file)
+
+    if settings.ir_type == "interactive":
+        ir_result = helpers.result_interactive(
+           inverted_file=inverted_file.inverted_file,
+           inputs=inputs
+        )
+
+        return render_template("result_interactive.html",
+                               ir_result=ir_result)
+    else:  # Experiment
+        return json.dumps(inverted_file.inverted_file, indent=2)
 
 
 if __name__ == '__main__':
