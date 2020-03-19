@@ -278,7 +278,7 @@
                                                 <div className="col-12 col-sm-12">
                                                     <div className="input-group input-group-sm" id="input_relevance">
                                                       <div className="input-group-prepend">
-                                                        <span className="input-group-text">Relevance Collections</span>
+                                                        <span className="input-group-text">Relevance Judgement</span>
                                                       </div>
                                                       <textarea
                                                           rows="10"
@@ -303,6 +303,222 @@
                         </div>
                     </div>
                     </form>
+
+                    <div className="container">
+                        <div className="card">
+                            <div className="card-header">
+                                <h5>User Guide</h5>
+                            </div>
+                            <div className="card-body">
+                                <h5 className="card-title">Indexing</h5>
+                                <p className="card-text">
+                                    There are a lot options that affecting how the IR system works:
+                                    <table className="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Options</th>
+                                                <th>Definition</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Term Frequency (TF)</td>
+                                                <td>
+                                                    Indicates the significance (weight) of a particular term within a document.
+                                                </td>
+                                                <td>
+                                                    <ul>
+                                                        <li>
+                                                            <b>Binary : </b>
+                                                            If a term occurs in a document, the term's TF value in that document
+                                                            will be 1, otherwise it's 0.
+                                                        </li>
+                                                        <li>
+                                                            <b>Raw : </b>
+                                                            If a term occurs in a document, the term's TF value will be the term's occurrences
+                                                            count in that document, otherwise it's 0.
+                                                        </li>
+                                                        <li>
+                                                            <b>Log : </b>
+                                                            If a term occurs in a document, the term's TF value will be&nbsp;
+                                                            <code>1 + log2(term's occurences count)</code>, otherwise it's 0.
+                                                        </li>
+                                                        <li>
+                                                            <b>Aug : </b>
+                                                            If a term occurs in a document, the term's TF value will be&nbsp;
+                                                            <code>0.5 + (0.5 * (term's count / maximum terms count in document))</code>,
+                                                            otherwise it's 0.
+                                                        </li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Inverse Document Frequency (IDF)</td>
+                                                <td>
+                                                    Indicates the rareness of a term in a collection of documents.
+                                                </td>
+                                                <td>
+                                                    <code>log2( total_number_of_documents / number_of_documents_that_contain_the_term )</code>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Cosine Normalization</td>
+                                                <td>
+                                                    TBD
+                                                </td>
+                                                <td>
+                                                    TBD
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Stopwords Removal</td>
+                                                <td>Remove stopwords from documents and queries input</td>
+                                                <td>
+                                                    <ul>
+                                                        <li>Only works on English language</li>
+                                                        <li>
+                                                            English stopwords : &nbsp;
+                                                            <a href="https://gist.github.com/sebleier/554280">Link</a>
+                                                        </li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Stemming</td>
+                                                <td>
+                                                    Reduce inflectional forms and sometimes derivationally related forms of a word to a common base form.
+                                                </td>
+                                                <td>
+                                                    <ul>
+                                                        <li>Only Porter Stemmer is used</li>
+                                                        <li>
+                                                            More info about Stemming :&nbsp;
+                                                            <a href="https://nlp.stanford.edu/IR-book/html/htmledition/stemming-and-lemmatization-1.html">Link</a>
+                                                        </li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </p>
+                                <br/>
+                                <h5 className="card-title">Retrieval</h5>
+                                <p className="card-text">
+                                    <table className="table">
+                                        <thead>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Experiment</td>
+                                                <td>
+                                                    <ul>
+                                                        <li>Show the performance analysis only based on relevance judgment.</li>
+                                                        <li>
+                                                            Analyzed performance:
+                                                            Recall, Precision, Mean Average Precision,
+                                                            Query-by-query performance
+                                                        </li>
+                                                        <li>
+                                                            Relevance judgement field is mandatory.
+                                                        </li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Interactive</td>
+                                                <td>
+                                                    <ul>
+                                                        <li>
+                                                            Works like a search engine. Shows ranked relevance documents.
+                                                        </li>
+                                                        <li>
+                                                            Works with one query only.
+                                                        </li>
+                                                        <li>
+                                                            Relevance judgement field is not mandatory.
+                                                        </li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </p>
+                                <br/>
+                                <h5 className="card-title">Inputs</h5>
+                                <p className="card-text">
+                                    <table className="table">
+                                        <thead>
+                                            <th>Type</th>
+                                            <th>Template</th>
+                                            <th>Example</th>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Document Collections</td>
+                                                <td>
+                                                    &lt; document's id &gt;<br/>
+                                                    &lt; document's content (multiline allowed) &gt;<br/>
+                                                    /
+                                                </td>
+                                                <td>
+                                                    1<br/>
+                                                    compact memories have flexible capacities  a digital data storage<br/>
+                                                    system with capacity up to bits and random and or sequential access<br/>
+                                                    is described<br/>
+                                                    /<br/>
+                                                    2<br/>
+                                                    an electronic analogue computer for solving systems of linear equations<br/>
+                                                    mathematical derivation of the operating principle and stability<br/>
+                                                    conditions for a computer consisting of amplifiers<br/>
+                                                    /
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Query Collections</td>
+                                                <td>
+                                                    &lt; query's id &gt;<br/>
+                                                    &lt; query's content (multiline allowed) &gt;<br/>
+                                                    /
+                                                </td>
+                                                <td>
+                                                    1<br/>
+                                                    Measurement of dielectric constant<br/>
+                                                    /<br/>
+                                                    2<br/>
+                                                    Mathematical Analysis<br/>
+                                                    /
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Relevance Judgement</td>
+                                                <td>
+                                                    &lt; query's id &gt;<br/>
+                                                    &lt; <br/> relevance documents' id<br/>
+                                                    (multiline allowed, separated by space)
+                                                    <br/>&gt;<br/>
+                                                    /
+                                                </td>
+                                                <td>
+                                                    1<br/>
+                                                    1239 1502 4462 4569 5472 5502 <br/>
+                                                    7923 8150 8172 8277 9219 9859 <br/>
+                                                    /<br/>
+                                                    2<br/>
+                                                    414 1894 3785 4720 5894 6736 <br/>
+                                                    /
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </p>
+                            </div>
+                        </div>
+                        <br/>
+                        <h6 className="text-right text-muted">Developed and maintained by Shandy</h6>
+                    </div>
                 </div>
             );
         }
