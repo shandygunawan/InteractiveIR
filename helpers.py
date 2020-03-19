@@ -33,15 +33,19 @@ def result_interactive(inverted_file, inputs):
         "result": []
     }
 
-    for idx, query in enumerate(inputs.queries):
-        for doc_id in inputs.docs.keys():
+    if len(inputs.queries.keys()) > 1:
+        return ir_result
+
+    for doc_id in inputs.docs.keys():
+        for query_id in inputs.queries.keys():
             ir_result["result"].append(
                 {
                     "id": doc_id,
-                    "document": inputs.docs_raw[doc_id]['document'],
-                    "score": cosine_similarity(inverted_file=inverted_file,
-                                                query=query,
-                                                doc_id=doc_id)
+                    "document": inputs.docs_raw[doc_id],
+                    "score": cosine_similarity(
+                        inverted_file=inverted_file,
+                        query=inputs.queries[query_id],
+                        doc_id=doc_id)
                 }
             )
 

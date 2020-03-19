@@ -1,11 +1,9 @@
 from collections import defaultdict
-from copy import deepcopy
 from math import log2
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 import settings
-import json
 
 
 class Inputs:
@@ -15,55 +13,86 @@ class Inputs:
     TYPE_RELEVANCE = "relevance"
 
     docs_raw = {}
-    queries_raw = []
+    queries_raw = {}
     relevances_raw = {}
 
     docs = {}
-    queries = []
+    queries = {}
     relevances = {}
 
     def __init__(self, req_form):
-        self.docs_raw = json.loads(req_form["input_doc"])
-        self.queries_raw = json.loads(req_form["input_query"])
+        self.parse_text(
+            input_type=self.TYPE_DOCUMENT,
+            input_text=req_form["input_doc"])
+        self.parse_text(
+            input_type=self.TYPE_QUERY,
+            input_text=req_form["input_query"])
 
-        self.set_docs(deepcopy(self.docs_raw))
-        self.set_queries(deepcopy(self.queries_raw))
-
-    #
-    # DOCS
-    #
-    def set_docs(self, json_docs):
-        self.docs = {}
-        for doc_id in json_docs.keys():
-            self.add_doc(doc_id, json_docs[doc_id])
-
-    def add_doc(self, doc_id, doc):
-        self.docs[doc_id] = self.preprocessing(input_type=self.TYPE_DOCUMENT,
-                                               input_content=doc)
+        self.preprocess_text(input_type=self.TYPE_DOCUMENT)
+        self.preprocess_text(input_type=self.TYPE_QUERY)
 
     #
-    # QUERIES
+    # TEXT(DOCS & QUERIES)
     #
-    def set_queries(self, json_queries):
-        self.queries = []
-        for query in json_queries:
-            self.add_query(query)
+    def parse_text(self, input_type, input_text):
+        lines = input_text.splitlines()
+        text_detected = False
+        text_id = ""
+        text_content = ""
 
-    def add_query(self, query):
-        self.queries.append(self.preprocessing(input_type=self.TYPE_QUERY,
-                                               input_content=query))
+        if input_type == self.TYPE_DOCUMENT:
+            self.docs_raw = {}
+            self.docs = {}
+        else:
+            self.queries_raw = {}
+            self.queries = {}
+
+        for line in lines:
+            # Start recording when a numeric string line detected
+            if not text_detected:
+                if line.isnumeric():
+                    text_detected = True
+                    text_id = line
+            else:
+                # End of document detected
+                if line == '/':
+                    text_detected = False
+
+                    # Remove \r\n and whitespace on string's end
+                    text_content = text_content.rstrip()
+                    if input_type == self.TYPE_DOCUMENT:
+                        self.docs_raw[text_id] = text_content
+                    else:
+                        self.queries_raw[text_id] = text_content
+
+                    text_id = ""
+                    text_content = ""
+
+                # Keep appending line string as document's content
+                else:
+                    text_content += line
+                    text_content += " "
+
+    def preprocess_text(self, input_type):
+        if input_type == self.TYPE_DOCUMENT:
+            for key in self.docs_raw.keys():
+                self.docs[key] = self.preprocessing(
+                    input_content=self.docs_raw[key]
+                )
+        else:
+            for key in self.queries_raw.keys():
+                self.queries[key] = self.preprocessing(
+                    input_content=self.queries_raw[key]
+                )
 
     #
     # OTHER
     #
-    def preprocessing(self, input_type, input_content):
+    def preprocessing(self, input_content):
         stop_words = set(stopwords.words('english'))
 
         # Case Folding
-        if input_type == self.TYPE_DOCUMENT:
-            words = input_content['document'].lower()
-        else:  # Query
-            words = input_content.lower()
+        words = input_content.lower()
 
         # Tokenize
         words = word_tokenize(words)
@@ -77,12 +106,7 @@ class Inputs:
             ps = PorterStemmer()
             words = [ps.stem(w) for w in words]
 
-        if input_type == self.TYPE_DOCUMENT:
-            input_content['document'] = words
-        else:
-            input_content = words
-
-        return input_content
+        return words
 
 
 class TFIDF:
@@ -111,8 +135,8 @@ class TFIDF:
     def calculate_idf(self, term):
         # Get number of documents that have term inside them
         df_count = 1
-        for doc_id in self.docs.keys():
-            if term in self.docs[doc_id]['document']:
+        for text_id in self.docs.keys():
+            if term in self.docs[text_id]:
                 df_count += 1
 
         idf = len(self.docs) / df_count
@@ -122,26 +146,25 @@ class TFIDF:
     #
     # TF
     #
-
-    def calculate_tf(self, term, doc_id):
+    def calculate_tf(self, term, text_id):
         if settings.tf == "raw":
-            return self.docs[doc_id]['document'].count(term)
+            return self.docs[text_id].count(term)
         elif settings.tf == "binary":
-            if term in self.docs[doc_id]['document']:
+            if term in self.docs[text_id]:
                 return 1
             else:
                 return 0
         elif settings.tf == "log":
-            if term not in self.docs[doc_id]['document']:
+            if term not in self.docs[text_id]:
                 return 0
             else:
-                return 1 + log2(self.docs[doc_id]['document'].count(term))
+                return 1 + log2(self.docs[text_id].count(term))
         elif settings.tf == "aug":
-            count_term = self.docs[doc_id]['document'].count(term)
+            count_term = self.docs[text_id].count(term)
 
             # Get the number of occurrences for the item with the highest occurrences
             d = defaultdict(int)
-            for i in self.docs[doc_id]['document']:
+            for i in self.docs[text_id]:
                 d[i] += 1
             count_max = (max(d.items(), key=lambda x: x[1]))[1]
 
@@ -161,15 +184,15 @@ class InvertedFile:
 
         tfidf = TFIDF(param_docs=docs)
 
-        for doc_id in docs.keys():
+        for text_id in docs.keys():
             # Weighting
-            for word in docs[doc_id]['document']:
+            for word in docs[text_id]:
                 if word not in self.inverted_file:
                     self.inverted_file[word] = {}
 
-                if doc_id not in self.inverted_file[word]:
+                if text_id not in self.inverted_file[word]:
                     if settings.tf != 'none':
-                        tf = tfidf.calculate_tf(word, doc_id)
+                        tf = tfidf.calculate_tf(word, text_id)
                     else:
                         tf = 1
 
@@ -181,4 +204,4 @@ class InvertedFile:
                     else:
                         idf = 1
 
-                    self.inverted_file[word][doc_id] = tf * idf
+                    self.inverted_file[word][text_id] = tf * idf

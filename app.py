@@ -3,6 +3,7 @@ from classes import Inputs, InvertedFile
 import json
 import helpers
 import settings
+import pprint
 
 app = Flask(__name__)
 
@@ -14,10 +15,14 @@ def index():
 
 @app.route('/result', methods=["POST"])
 def result():
+    # Parse inputs (documents, queries, relevances)
     helpers.set_settings(request.form)
     inputs = Inputs(request.form)
+
+    # Create inverted file
     inverted_file = InvertedFile(inputs.docs)
 
+    # Execute IR System (Interactive or experiment)
     if settings.ir_type == "interactive":
         ir_result = helpers.result_interactive(
            inverted_file=inverted_file.inverted_file,
