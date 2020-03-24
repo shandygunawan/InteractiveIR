@@ -31,6 +31,9 @@ class Inputs:
         self.preprocess_text(input_type=self.TYPE_DOCUMENT)
         self.preprocess_text(input_type=self.TYPE_QUERY)
 
+        if settings.ir_type == 'experiment':
+            self.parse_relevances(req_form["input_relevance"])
+
     #
     # TEXT(DOCS & QUERIES)
     #
@@ -84,6 +87,32 @@ class Inputs:
                 self.queries[key] = self.preprocessing(
                     input_content=self.queries_raw[key]
                 )
+
+    #
+    # RELEVANCES
+    #
+    def parse_relevances(self, input_rel):
+        lines = input_rel.splitlines()
+        rel_detected = False
+        rel_id = ""
+        rel_content = []
+
+        for line in lines:
+            if not rel_detected:
+                rel_id = line
+                rel_detected = True
+            else:
+                # End of rel
+                if line == '/':
+                    rel_detected = False
+
+                    self.relevances[rel_id] = rel_content
+                    rel_id = ""
+                    rel_content = []
+                else:
+                    line_splitted = line.split()
+                    for doc_id in line_splitted:
+                        rel_content.append(doc_id)
 
     #
     # OTHER

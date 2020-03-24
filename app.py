@@ -3,7 +3,6 @@ from classes import Inputs, InvertedFile
 import json
 import helpers
 import settings
-import pprint
 
 app = Flask(__name__)
 
@@ -32,7 +31,7 @@ def result():
         return render_template("result_interactive.html",
                                ir_result=ir_result)
     else:  # Experiment
-        return json.dumps(inverted_file.inverted_file, indent=2)
+        return json.dumps(inputs.relevances, indent=2)
 
 
 if __name__ == '__main__':
