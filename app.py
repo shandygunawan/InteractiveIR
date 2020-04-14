@@ -31,7 +31,11 @@ def result():
         return render_template("result_interactive.html",
                                ir_result=ir_result)
     else:  # Experiment
-        return json.dumps(inputs.relevances, indent=2)
+        ir_result = helpers.result_experiment(
+            inverted_file=inverted_file.inverted_file,
+            inputs=inputs
+        )
+        return json.dumps(ir_result, indent=2)
 
 
 if __name__ == '__main__':
