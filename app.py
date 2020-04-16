@@ -35,7 +35,9 @@ def result():
             inverted_file=inverted_file.inverted_file,
             inputs=inputs
         )
-        return json.dumps(ir_result, indent=2)
+        return render_template("result_experiment.html",
+                               ir_result=ir_result,
+                               inverted_file=inverted_file.inverted_file)
 
 
 if __name__ == '__main__':

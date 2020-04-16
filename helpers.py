@@ -95,7 +95,7 @@ def result_experiment(inverted_file, inputs):
                         relevance_found.append(doc_id)
 
         # Query bby query Performance
-        query_performances[query_id]['text'] = inputs.queries[query_id]
+        query_performances[query_id]['text'] = inputs.queries_raw[query_id]
         query_performances[query_id]['recall'] = len(query_relevances) / len(inputs.relevances[query_id])
         query_performances[query_id]['precision'] = len(query_relevances) / len(query_retrieved)
 

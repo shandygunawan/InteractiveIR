@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Experiment Result</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+<script type="text/babel">
+    // Receive variables from backend
+    const ir_result = JSON.parse('{{ ir_result | tojson | safe }}');
+    const inverted_file = JSON.parse('{{ inverted_file | tojson | safe }}');
+
+    // Components
+    function TableQueriesPerformances(props){
+        var queries = [];
+
+        Object.keys(props.queries).forEach(key => {
+            queries.push(
+                <tr key={key}>
+                    <th scope="row">{key}</th>
+                    <td>{props.queries[key]['text']}</td>
+                    <td>{props.queries[key]['recall']}</td>
+                    <td>{props.queries[key]['precision']}</td>
+                    <td>{props.queries[key]['average_precision']}</td>
+                </tr>
+            )
+        });
+
+        return (
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Query</th>
+                        <th scope="col">Recall</th>
+                        <th scope="col">Precision</th>
+                        <th scope="col">Average Precision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {queries}
+                </tbody>
+            </table>
+        )
+    }
+
+    function TableInvertedFile(props){
+        var keywords = [];
+
+        Object.keys(props.inverted_file).forEach(keyword => {
+            Object.keys(props.inverted_file[keyword]).forEach(doc_id => {
+               keywords.push(
+                   <tr key={keyword + "-" + doc_id}>
+                       <td>{keyword}</td>
+                       <td>{doc_id}</td>
+                       <td>{props.inverted_file[keyword][doc_id]}</td>
+                   </tr>
+               );
+            });
+        });
+
+        return (
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Keyword</th>
+                        <th scope="col">Document's ID</th>
+                        <th scope="col">Weight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {keywords}
+                </tbody>
+            </table>
+        );
+    }
+
+    // Main Class
+    class ResultExperiment extends React.Component {
+        render(){
+            return(
+                <div className="container">
+                    <h2>Experiment Result</h2>
+
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <div className="card">
+                                <div className="card-body">
+                                    <h5 className="card-title">Global Performance</h5>
+                                    <table className="table">
+                                        <tbody>
+                                            <tr>
+                                                <td>Recall</td>
+                                                <td>{{ ir_result['recall'] }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Precision</td>
+                                                <td>{{ ir_result['precision'] }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Mean Average Precision</td>
+                                                <td>{{ ir_result['mean_average_precision'] }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br/><br/>
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <div className="card">
+                                <div className="card-body">
+                                    <h5 className="card-title">Query-by-query Performances</h5>
+                                    <TableQueriesPerformances queries={ir_result['query_performances']} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br/><br/>
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <div className="card">
+                                <div className="card-body">
+                                    <h5 className="card-title">Inverted File</h5>
+                                    <TableInvertedFile
+                                        inverted_file={inverted_file}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+    }
+
+    ReactDOM.render(
+        <ResultExperiment/>,
+        document.getElementById('root')
+    );
+</script>
+</html>
