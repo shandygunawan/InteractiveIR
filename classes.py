@@ -1,8 +1,11 @@
 from collections import defaultdict
+from copy import deepcopy
 from math import log2
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
+import inflect
+import re
 import settings
 
 
@@ -120,11 +123,29 @@ class Inputs:
     def preprocessing(self, input_content):
         stop_words = set(stopwords.words('english'))
 
-        # Case Folding
-        words = input_content.lower()
-
         # Tokenize
-        words = word_tokenize(words)
+        words = word_tokenize(input_content)
+
+        # Normalization
+        if settings.normalization == 'true':
+            new_words = []
+            p = inflect.engine()
+
+            for word in words:
+                new_word = deepcopy(word)
+                # Replace numbers
+                if new_word.isdigit():
+                    new_word = p.number_to_words(new_word)
+
+                # Remove punctuations
+                new_word = re.sub(r'[^\w\s]', '', word)
+
+                # Case-folding
+                new_word = new_word.lower()
+
+                new_words.append(new_word)
+
+            words = new_words
 
         # Stopwords Removal
         if settings.stopwords == 'true':

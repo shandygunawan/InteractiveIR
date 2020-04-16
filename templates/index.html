@@ -169,7 +169,7 @@
                                                         labels={
                                                             [
                                                                 'None',
-                                                                'Cosine Normalization',
+                                                                'Normalization',
                                                             ]
                                                         }
                                                     />
@@ -363,17 +363,22 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td>Cosine Normalization</td>
+                                                <td>Normalization</td>
                                                 <td>
-                                                    TBD
+                                                    Generally refers to a series of related tasks meant to put all text on a level playing field.
                                                 </td>
                                                 <td>
-                                                    TBD
+                                                    In this application, Normalization will do these things (in order):
+                                                    <ol>
+                                                        <li>Convert numbers to words</li>
+                                                        <li>Remove punctuations</li>
+                                                        <li>Case-Folding to lower case</li>
+                                                    </ol>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>Stopwords Removal</td>
-                                                <td>Remove stopwords from documents and queries input</td>
+                                                <td>Remove stopwords from documents and queries input.</td>
                                                 <td>
                                                     <ul>
                                                         <li>Only works on English language</li>
@@ -419,7 +424,7 @@
                                                         <li>
                                                             Analyzed performance:
                                                             Recall, Precision, Mean Average Precision,
-                                                            Query-by-query performance
+                                                            Query-by-query performance, and inverted file.
                                                         </li>
                                                         <li>
                                                             Relevance judgement field is mandatory.
