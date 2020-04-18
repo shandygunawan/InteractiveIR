@@ -92,10 +92,15 @@
             };
         }
 
+        sendRequest(){
+            $('#img_loading').show();
+        }
+
         componentDidMount(){
             this.enableTab("textarea_doc");
             this.enableTab("textarea_query");
             this.enableTab("textarea_relevance");
+            $('#img_loading').hide();
         }
 
         render(){
@@ -299,6 +304,9 @@
                         <div className="row p-2">
                             <div className="col-12 col-sm-12 d-flex justify-content-center">
                                 <button className="btn btn-primary" onClick={this.sendRequest}>Submit</button>
+                            </div>
+                            <div className="col-12 col-sm-12 d-flex justify-content-center">
+                                <img id="img_loading" src="/static/img/loading.gif" alt="Processing" />
                             </div>
                         </div>
                     </div>
